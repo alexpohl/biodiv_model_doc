@@ -1,0 +1,52 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+
+\title{"Spatialized Phylogenetic Climate-driven Ecodiversity Simulator" (SpyCiEs) v.0.0}
+
+\author{Alexandre Pohl\\ Biogéosciences, UMR 6282, UBFC/CNRS, Université Bourgogne Franche-Comté, 6 boulevard Gabriel, F-21000 Dijon, France}
+
+\date{\today}
+
+
+
+
+
+\begin{document}
+
+\maketitle
+
+\section{Rationale}
+
+\textbf{SpyCiES} is a biodiversity model built upon the model of Brayard et al.
+
+\section{Obtaining the code}
+
+The model code is hosted on Github. You can visit the webpage and download an archive of the code, but the best solution to obtain a full copy of the model code with possibility to easily update it later, is to clone the repository:
+
+\begin{lstlisting}
+git clone https://github.com/alexpohl/biodiv_model
+\end{lstlisting}
+
+\section{Prerequisite and code structuring}
+
+SPyCieS has been developed to run on \textbf{Linux} (clusters). It has not been tested on other operating systems, although it is coded in python and should be fully usable on MacOS and Windows. You need a \textbf{python 3} install and may need to install new modules (probably using pip install -{}-user package\_name).
+The \textbf{main program} can be found in "mainprog.py". It also uses miscellaneous python functions gathered in the "source" directory. Mainprog.py requires one positional argument, which is the \textbf{userconfig}. 
+
+Here is the line you should run into your linux terminal to execute a model simulation interactively:
+
+\begin{lstlisting}
+python mainprog.py userconfigs/userconfig.py
+\end{lstlisting}
+
+A small utilitary is also provided to directly submit a batch Job. It has been designed to work on the regional cluster (CCUB) but can be easily adapted to other clusters:
+
+\begin{lstlisting}
+python runbatch.py userconfigs/userconfig.py
+\end{lstlisting}
+
+%\section{FAQ}
+%    \subsection{HOW TO: do something}
+\end{document}
+
