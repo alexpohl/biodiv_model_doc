@@ -1,15 +1,28 @@
 \documentclass[a4paper, 11pt]{article}
 
-\usepackage[utf8]{inputenc}
+%\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{listings}
+\usepackage{url}
+\usepackage[top=30pt,bottom=45pt,left=48pt,right=48pt]{geometry}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+}
+\usepackage{natbib}
+
+\newcommand\code[1]{%
+\texttt{#1}%
+}
+
+\setlength\parindent{0pt}
 
 \title{"Spatialized Phylogenetic Climate-driven Ecodiversity Simulator" (SpyCiEs) v.0.0}
 
-\author{Alexandre Pohl\\ Biogéosciences, UMR 6282, UBFC/CNRS, Université Bourgogne Franche-Comté, 6 boulevard Gabriel, F-21000 Dijon, France}
+\author{Alexandre Pohl\\ Biogéosciences, UMR 6282, UBFC/CNRS,\\ Université Bourgogne Franche-Comté,\\ 6 boulevard Gabriel, F-21000 Dijon,\\ France}
 
-\date{\today}
-
-
+\date{}
 
 
 
@@ -17,36 +30,131 @@
 
 \maketitle
 
+Last updated: \date{\today}
+
+\tableofcontents
+
 \section{Rationale}
 
-\textbf{SpyCiES} is a biodiversity model built upon the model of Brayard et al.
+\textbf{SpyCiES} is a biodiversity model built upon the model of \citet{Brayard2004,Brayard2005}, translated to \code{python} in 2021 by A. Pohl, in the goal to add new developments to the model code.\\
+
+You are reading the support documentation, the full and most uptodate version of which can be found at (and cloned from) that address:\\
+
+\code{git clone https://github.com/alexpohl/biodiv\_model\_doc}\\
+
+It is expected that the readers has basic knowledge of linux commands and has been granted access to a computer or cluster.
+
+\section{Differences with the historical model}
+
+Here are the main differences with the model of \citet{Brayard2004,Brayard2005}:
+\begin{enumerate}
+    \item Speciation and extinction rates are very different, notably due to the much lower horizontal model resolution (36$\times$36, compared to 120$\times$120).
+    \item Since \citet{Brayard2004,Brayard2005} showed that currents to do impact the final result, and considering that we're mainly interested in equilibria, we got rid of currents.
+    \item The model does not converge toward a stable dynamic equilibrium, possibly due to the longer integration time or inadapted speciation and extinction rates... The model is thus free to drift and there is no capping of local biodiversity (although the code still has the provision to add it, for backward compatibility).
+    \item The model is now coded in python rather than IDL. 
+\end{enumerate}
 
 \section{Obtaining the code}
 
-The model code is hosted on Github. You can visit the webpage and download an archive of the code, but the best solution to obtain a full copy of the model code with possibility to easily update it later, is to clone the repository:
+The model code is hosted on \textbf{Github}. You can visit the webpage and download an archive of the code, but the best solution to obtain a full copy of the model code with possibility to easily update it later, is to \textbf{clone} the repository:\\
 
-\begin{lstlisting}
-git clone https://github.com/alexpohl/biodiv_model
-\end{lstlisting}
+\code{git clone https://github.com/alexpohl/biodiv\_model.git}
 
-\section{Prerequisite and code structuring}
+\paragraph{Remark:} You may get an \code{ERROR 404 -- Page not found} when trying to open the GitHub link above while not logged in.\\
 
-SPyCieS has been developed to run on \textbf{Linux} (clusters). It has not been tested on other operating systems, although it is coded in python and should be fully usable on MacOS and Windows. You need a \textbf{python 3} install and may need to install new modules (probably using pip install -{}-user package\_name).
-The \textbf{main program} can be found in "mainprog.py". It also uses miscellaneous python functions gathered in the "source" directory. Mainprog.py requires one positional argument, which is the \textbf{userconfig}. 
+The model will be executed in that directory; you should thus clone (download) the directory at a location where you can execute programs and write output files. Typically, on the CCUB cluster, this is gonna be on your \code{WORKDIR} (i.e., not your \code{HOME} nor your \code{ARCHIVE}).\\
 
-Here is the line you should run into your linux terminal to execute a model simulation interactively:
+In any case, the code is \textbf{password-protected} and preliminary steps will consist in:
+\begin{enumerate}
+    \item Creating a GitHub account if you don't have one.
+    \item Getting access to the model repository (on request to A. Pohl).
+\end{enumerate}
 
-\begin{lstlisting}
-python mainprog.py userconfigs/userconfig.py
-\end{lstlisting}
+\section{Running the model}
 
-A small utilitary is also provided to directly submit a batch Job. It has been designed to work on the regional cluster (CCUB) but can be easily adapted to other clusters:
+\paragraph{Requirements} SPyCieS has been developed to run on \textbf{Linux} (clusters). It has not been tested on other operating systems, although it is coded in python and should be fully usable on MacOS and Windows. You need a \textbf{Python 3} install and may need to install new packages (probably using \code{pip install -{}-user package\_name} [replace \code{package\_name} with the name of the package you wanna install, e.g., \code{rasterio}]).
 
-\begin{lstlisting}
-python runbatch.py userconfigs/userconfig.py
-\end{lstlisting}
+\paragraph{Modules} On most linux clusters, many programs (such as Python 3) are already installed; all you'll have to do is loading the right modules (in the case of Python, the packages coming by default with the module may not be sufficient and you may still have you install additional ones, see above). Use \code{module avail} to list available modules, \code{module purge} to unload every module, and \code{load module\_name} to load a specific module. You can include such module management code into your \code{.bashrc}, \code{.czhrc} or \code{.cshrc} file (pick the right one according to your shell type, determined using \code{echo \$shell}) in your \code{\$HOME} directory. For the record, here are the modules that I suggest loading on CCUB:\\ 
 
-%\section{FAQ}
-%    \subsection{HOW TO: do something}
+\code{
+Currently Loaded Modulefiles:\\
+ 1) intel/2020\\
+ 2) python/3.6/intel/2019\\   
+ 3) nco/4.7.7/intel/2018\\
+ 4) cdo/1.9.2/intel/2018\\
+ 5) gcc/9.1.0\\   
+ 6) R/3.6.2/gcc/9.1.0
+}
+
+\paragraph{Running the model interactively} The \textbf{main program} can be found in \code{mainprog.py}. It also uses miscellaneous python functions gathered in the \code{source} directory. \code{Mainprog.py} requires one positional argument, which is the \textbf{userconfig}. Here is the line you should run into your linux terminal (from the model root directory) to execute a model simulation interactively (executing this precise line will run the model example experiment, for which all required input files are provided with the model code):\\
+
+\code{python mainprog.py userconfigs/userconfig.py}\\
+
+This will create an output directory with same name as the \code{userconfig} file used, in the \code{output} directory, or alternatively at any location provided using parameter \code{par\_pathout} in the \code{userconfig} file. Please note that the content of the output directory will automatically be deleted when a new simulation of same name is launched -- so be careful. You'll see key numbers displayed interactively on your screen as long as the model runs. You can interrupt the simulation at any time by simultaneously hitting keyboard keys \code{CTRL} [control] + \code{C} [letter C; no capital: do not hold shift at the same time].\\
+
+The interactive mode is convenient to rapidly test your code but its use is very limited: the simulation stops when you close your terminal window or log out, and it does not permit running several simulations in parallel. In order to overcome those limitations, your are highly encouraged to submit simulations in batch mode.
+
+\paragraph{Running the model in batch mode}A small utilitary is provided to directly submit a batch Job. It has been designed to work on the regional cluster (CCUB) but can be easily adapted to other clusters. The basic usage consists in typing: \\ 
+
+\code{python runbatch.py userconfigs/userconfig.py}\\
+
+You can also do the same but also assign a name to your simulation / batch job: \\
+
+\code{python runbatch.py userconfigs/userconfig.py jobname}\\
+
+After submitting batch jobs, you'll be able to get a list of your currently running simulations using \code{qstat}. If you want to stop a model run, type in \code{qdel job-ID}, \code{job-ID} being the unique, 7-digit simulation ID provided in the first column of the output of the \code{qstat} command. For more information on the CCUB cluster, please read \url{https://ccub.u-bourgogne.fr/dnum-ccub/spip.php?article959}.\\
+
+The output log of batch jobs is redirected to \code{./logs}; it is useless most of the time but can sometimes be used to keep track of execution issues and the model execution time.
+
+\section{Analyzing the model output}
+
+\paragraph{Output files}The model regularly outputs \textbf{snapshots} during its integration (every \code{par\_nc\_saving\_freq} timestep(s)) and keeps track of every timestep in the log file. Once the run finished, additional files are generated:
+
+\begin{enumerate}
+\item \textbf{timeseries.nc}: this file contains time series, with data for each single time step.
+\item \textbf{history\_timesteps\_\#to\#.nc}: this file gathers all saved snapshots into one single output file.
+\item \textbf{final\_cologrd.nc}: this file contains, for each species present at the end of the model integration time (but not for species that disappeared), the final spatial extent together with the temperature range defining the thermal niche of the species (i.e., minimum and maximum temperatures).
+\end{enumerate}
+
+Should the simulation not reach its final timestep, \code{history\_timesteps\_\#to\#.nc} would not be output. In that case, a python routine is provided to assemble the missing timeseries: \code{utils/evol.py}.
+
+\paragraph{Plotting output data}Most output data comes in the from of self-describing \textbf{NetCDF} files, which can be plotted in various ways: using Matlab, Python or Ferret but also GIS softwares, Panoply... I personally suggest using Ferret, because it's very easy to use to rapidly explore data. Ferret is not installed on the CCUB cluster and will have to be installed by downloading the github distribution in the form of a \code{tar.gz} file and following the installation procedure, see \url{https://ferret.pmel.noaa.gov/Ferret/downloads/ferret-installation-and-update-guide}. A user guide can be accessed at \url{https://ferret.pmel.noaa.gov/Ferret/documentation/users-guide}. For instance, use the following lines to plot any snapshot output file:\\
+
+\code{ferret \# will start ferret\\
+use snapshot\_timestep1999.nc \# will load the output file\\
+show data \# will show the content of the file\\
+plot BIODIV[X=@ave] \# will plot the latitudinal diversity gradient, i.e., zonal average of biodiversity}\\
+
+As you can see, Ferret is really concise! It also permits assembling such command lines into a script with extension \code{.jnl}, that you'll call and run inside Ferret using \code{go myscript.jnl}.\\
+
+A basic python script is also provided (\code{./utils/plot\_LDG.py}) that plots, for any given number of output paths, the latitudinal diversity gradient normalized to maximum diversity (mean, and enveloppe corresponding to $\pm$2$\sigma$, calculated from a given timestep to the end of the model run). The normalization permits comparing the results of different experiments that may have run for variable durations or taken different trajectories, and whould thus be characterized by very different total numbers of co-existing species.
+
+\section{FAQ}
+
+    \subsection{HOW TO: check that the model reached equilibrium}
+
+It is important to check that the model reached equilibrium before interpreting the results. In short, in this case, it consists in determining if the simulated latitudinal diversity gradient reached a final shape, or if it is still significantly evolving.\\
+
+Because the number of species keeps growing during the model integration time, absolute values of number of species per latitudinal band will necessarily keep changing. In order the really have a look at the \textbf{shape} of the latitudinal diversity gradient, it is useful to \textbf{normalize} local diversity by the total number of species. Then, it is possible to determine if the normalized latitudinal diversity gradient still evolves, or not. An interesting tool is the python script \code{./utils/plot\_LDG.py}, which gives the mean latitudinal gradient over the last \# model timesteps, and also the enveloppe (2$\sigma$, thus representing the 95\% confidence interval).\\
+
+In case equilibrium hasn't been reached at the end of the model run, you may want to run a longer simulation by increasing the total number of timesteps: parameter \code{par\_n\_timesteps} in the \code{userconfig}. Unfortunately, depending on the initial seeding point and continental configuration (among other things), the number of timesteps required to reach equilibrium will vary and the model does not include any automatic convergence criterion so far. We tried capping total biodiversity using random global extinctions (by setting \code{opt\_cap\_max\_global\_diversity = True}) but this workaround appeared to significantly destabilize the simulated latitudinal diversity gradient and was therefore abandoned.
+
+    \subsection{HOW TO: play with the model parameters}
+
+Many model parameters are included in the \code{userconfig} file. In order to determine the impact of a given model parameter on the results, one traditionally conduct a \textbf{sensitivity analysis} to this parameter by repeating several times the exact same simulation, except that the parameter value is changed (all other things being kept equal). The main model parameters to change are the following:
+\begin{enumerate}
+    \item \textbf{par\_dataset}: the sea-surface temperature field. A flatter latitudinal temperature gradient, supposedly typical of warmer climatic periods of the geological past, would modify the simulated latitudinal biodiversity gradient.
+    \item \textbf{par\_imposed\_seeding\_pt\_indices}: the original seeding point. An important question is to determine if the original seeding point impacts the final shape of the latitudinal diversity gradient, or not.
+    \item \textbf{par\_sst\_distribution}: the shape and width of the species tolerange range. Two options are coded: \code{fixed} considers that all species have a given, identical, thermal tolerance, while \code{gaussian} extracts the thermal tolerance from a gaussian distribution of parameters \code{$\mu$} and \code{$\sigma$}. A small python script (\code{./utils/plot\_distributions.py}) permits visualizing the gaussian distribution associated with given values of \code{$\mu$} and \code{$\sigma$}. 
+\end{enumerate}
+
+    \subsection{HOW TO: implement a new source of input data}
+
+If the source of data has not been previously implemented, you'll have to add it as another \code{elif} statement in \code{./source/fun\_read\_gcm\_output.py}.
+Then, you can define the dataset info in \url{./input/define\_datasets.py}.
+
+\bibliographystyle{apalike}
+\bibliography{mendeleybib} 
+
 \end{document}
 
